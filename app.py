@@ -1,14 +1,13 @@
 import streamlit as st
-import google.generativeai as genai
 import PyPDF2
 import json
+import requests
 
 st.set_page_config(page_title="CV Fit: AI ATS Simulator", layout="wide")
 st.title("CV Fit: AI ATS Simulator")
 
 # Load API Key securely
 api_key = st.secrets["GEMINI_API_KEY"]
-genai.configure(api_key=api_key)
 
 col1, col2 = st.columns(2)
 
@@ -42,20 +41,39 @@ with col2:
                 {cv_text}
                 """
 
-                # Using generative model search configuration safely
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                response = model.generate_content(prompt)
+                # Direct API request using requests (compatible with your key)
+                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent"
+                headers = {
+                    "Content-Type": "application/json",
+                    "X-goog-api-key": api_key
+                }
+                data = {
+                    "contents": [
+                        {
+                            "parts": [
+                                {"text": prompt}
+                            ]
+                        }
+                    ]
+                }
+
+                response = requests.post(url, headers=headers, json=data)
                 
-                result_text = response.text.replace("```json", "").replace("```", "").strip()
-                result = json.loads(result_text)
+                if response.status_code == 200:
+                    res_json = response.json()
+                    result_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                    result_text = result_text.replace("```json", "").replace("```", "").strip()
+                    result = json.loads(result_text)
 
-                st.subheader(f"Match Rate: {result.get('match_rate', 0)}%")
-                st.progress(result.get('match_rate', 0) / 100)
+                    st.subheader(f"Match Rate: {result.get('match_rate', 0)}%")
+                    st.progress(result.get('match_rate', 0) / 100)
 
-                st.write("### Missing Keywords")
-                for kw in result.get('missing_keywords', []):
-                    st.error(kw)
+                    st.write("### Missing Keywords")
+                    for kw in result.get('missing_keywords', []):
+                        st.error(kw)
 
-                st.write("### Strengths")
-                for st_point in result.get('strengths', []):
-                    st.success(st_point)
+                    st.write("### Strengths")
+                    for st_point in result.get('strengths', []):
+                        st.success(st_point)
+                else:
+                    st.error(f"API Error: {response.text}")
