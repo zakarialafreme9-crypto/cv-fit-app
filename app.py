@@ -3,21 +3,18 @@ import google.generativeai as genai
 import PyPDF2
 import json
 
-st.set_page_config(page_title="CV Fit - ATS Simulator", layout="wide")
-st.title("🔍 CV Fit: AI ATS Simulator")
+st.set_page_config(page_title="CV Fit: AI ATS Simulator", layout="wide")
+st.title("CV Fit: AI ATS Simulator")
 
-try:
-    api_key = st.secrets["GEMINI_API_KEY"]
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
-except:
-    st.error("المرجو إضافة الساروت GEMINI_API_KEY في إعدادات Streamlit")
+api_key = st.secrets["GEMINI_API_KEY"]
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 col1, col2 = st.columns(2)
 
 with col1:
     st.header("1. Upload Your CV")
-    job_desc = st.text_area("Job Description (حط الإعلان هنا):", height=200)
+    job_desc = st.text_area("Job Description (حط الإعلان هنا)", height=200)
     uploaded_file = st.file_uploader("Upload CV (PDF)", type=["pdf"])
     analyze_btn = st.button("Analyze CV", use_container_width=True)
 
@@ -25,7 +22,7 @@ with col2:
     st.header("2. ATS Results")
     if analyze_btn:
         if not uploaded_file or not job_desc:
-            st.warning("Please upload a CV and paste a Job Description first.")
+            st.warning("Please upload a cv and paste a Job Description first.")
         else:
             with st.spinner("AI is analyzing your CV..."):
                 reader = PyPDF2.PdfReader(uploaded_file)
@@ -44,22 +41,18 @@ with col2:
                 CV:
                 {cv_text}
                 """
-                
-                try:
-                    response = model.generate_content(prompt)
-                    result_text = response.text.replace('```json', '').replace('```', '').strip()
-                    result = json.loads(result_text)
-                    
-                    st.subheader(f"🎯 Match Rate: {result.get('match_rate', 0)}%")
-                    st.progress(result.get('match_rate', 0) / 100)
-                    
-                    st.write("🚨 **Missing Keywords:**")
-                    for kw in result.get('missing_keywords', []):
-                        st.error(kw)
-                        
-                    st.write("✅ **Strengths:**")
-                    for st_point in result.get('strengths', []):
-                        st.success(st_point)
-                        
-                except Exception as e:
-                    st.error("وقع مشكل فالتحليل، تأكد من الفورمات ديال الـ CV وجرب مرة أخرى.")
+
+                response = model.generate_content(prompt)
+                result_text = response.text.replace("```json", "").replace("```", "").strip()
+                result = json.loads(result_text)
+
+                st.subheader(f"Match Rate: {result.get('match_rate', 0)}%")
+                st.progress(result.get('match_rate', 0) / 100)
+
+                st.write("### Missing Keywords")
+                for kw in result.get('missing_keywords', []):
+                    st.error(kw)
+
+                st.write("### Strengths")
+                for st_point in result.get('strengths', []):
+                    st.success(st_point)
