@@ -8,7 +8,7 @@ st.title("CV Fit: AI ATS Simulator")
 
 api_key = st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel('gemini-pro')
+model = genai.GenerativeModel('gemini-2.5-flash')
 
 col1, col2 = st.columns(2)
 
