@@ -6,9 +6,9 @@ import json
 st.set_page_config(page_title="CV Fit: AI ATS Simulator", layout="wide")
 st.title("CV Fit: AI ATS Simulator")
 
+# Load API Key securely
 api_key = st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel('gemini-2.5-flash')
 
 col1, col2 = st.columns(2)
 
@@ -42,7 +42,10 @@ with col2:
                 {cv_text}
                 """
 
+                # Using generative model search configuration safely
+                model = genai.GenerativeModel('gemini-1.5-flash')
                 response = model.generate_content(prompt)
+                
                 result_text = response.text.replace("```json", "").replace("```", "").strip()
                 result = json.loads(result_text)
 
