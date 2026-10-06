@@ -41,11 +41,11 @@ with col2:
                 {cv_text}
                 """
 
-                # Direct API request using requests (compatible with your key)
-                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent"
+                # Updated request headers for AQ format keys
+                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
                 headers = {
                     "Content-Type": "application/json",
-                    "X-goog-api-key": api_key
+                    "Authorization": f"Bearer {api_key}"
                 }
                 data = {
                     "contents": [
@@ -76,4 +76,4 @@ with col2:
                     for st_point in result.get('strengths', []):
                         st.success(st_point)
                 else:
-                    st.error(f"API Error: {response.text}")
+                    st.error(f"API Error ({response.status_code}): {response.text}")
