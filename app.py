@@ -42,7 +42,9 @@ with col2:
                 {cv_text}
                 """
 
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                model = genai.GenerativeModel('gemini-pro')
+                response = model.generate_content(prompt)
+
                 response = model.generate_content(prompt)
                 
                 result_text = response.text.replace("```json", "").replace("```", "").strip()
